@@ -1,6 +1,8 @@
 package io.github.agentcheck;
 
 import io.github.agentcheck.evaluation.EvaluationStatus;
+import io.github.agentcheck.evaluation.EvaluationCaseResult;
+import io.github.agentcheck.evaluation.EvaluationSuiteResult;
 import io.github.agentcheck.golden.ExpectedBehaviour;
 import io.github.agentcheck.golden.GoldenTestCase;
 import io.github.agentcheck.golden.GoldenTestSuite;
@@ -19,7 +21,7 @@ class RetrievalEvaluationTest {
 
     @Test
     void computesRecallAtKAndReciprocalRankForMultipleRelevantDocuments() {
-        var result = evaluator.evaluate(testCase(List.of("a", "c")), execution(
+        EvaluationCaseResult result = evaluator.evaluate(testCase(List.of("a", "c")), execution(
                 new RetrievedDocument("x", 1), new RetrievedDocument("a", 2), new RetrievedDocument("c", 7)));
 
         assertThat(result.retrieval().recallAtK().value()).isEqualTo(0.5);
@@ -29,15 +31,15 @@ class RetrievalEvaluationTest {
 
     @Test
     void rankOneRelevantDocumentGetsPerfectReciprocalRank() {
-        var result = evaluator.evaluate(testCase(List.of("a")), execution(new RetrievedDocument("a", 1)));
+        EvaluationCaseResult result = evaluator.evaluate(testCase(List.of("a")), execution(new RetrievedDocument("a", 1)));
         assertThat(result.retrieval().reciprocalRank().value()).isEqualTo(1.0);
     }
 
     @Test
     void relevantDocumentOutsideKHasZeroRecallButNonzeroReciprocalRank() {
-        var documents = java.util.stream.IntStream.rangeClosed(1, 6)
+        List<RetrievedDocument> documents = java.util.stream.IntStream.rangeClosed(1, 6)
                 .mapToObj(rank -> new RetrievedDocument(rank == 6 ? "relevant" : "x" + rank, rank)).toList();
-        var result = evaluator.evaluate(testCase(List.of("relevant")), AgentExecution.of("input", documents, List.of()));
+        EvaluationCaseResult result = evaluator.evaluate(testCase(List.of("relevant")), AgentExecution.of("input", documents, List.of()));
 
         assertThat(result.retrieval().recallAtK().value()).isZero();
         assertThat(result.retrieval().reciprocalRank().value()).isEqualTo(1.0 / 6.0);
@@ -45,7 +47,7 @@ class RetrievalEvaluationTest {
 
     @Test
     void emptyRetrievalProducesZeroApplicableMetrics() {
-        var result = evaluator.evaluate(testCase(List.of("a")), execution());
+        EvaluationCaseResult result = evaluator.evaluate(testCase(List.of("a")), execution());
         assertThat(result.retrieval().recallAtK().value()).isZero();
         assertThat(result.retrieval().reciprocalRank().value()).isZero();
         assertThat(result.retrieval().recallAtK().applicable()).isTrue();
@@ -53,7 +55,7 @@ class RetrievalEvaluationTest {
 
     @Test
     void duplicateDocumentIdsAreIgnoredWithoutRewritingDeclaredRanks() {
-        var result = evaluator.evaluate(testCase(List.of("a")), execution(
+        EvaluationCaseResult result = evaluator.evaluate(testCase(List.of("a")), execution(
                 new RetrievedDocument("x", 1), new RetrievedDocument("x", 2),
                 new RetrievedDocument("y", 3), new RetrievedDocument("z", 4),
                 new RetrievedDocument("q", 5), new RetrievedDocument("a", 6)));
@@ -64,7 +66,7 @@ class RetrievalEvaluationTest {
 
     @Test
     void retrievalWithoutRelevanceJudgmentsIsNotApplicable() {
-        var result = evaluator.evaluate(testCase(List.of()), execution(new RetrievedDocument("a", 1)));
+        EvaluationCaseResult result = evaluator.evaluate(testCase(List.of()), execution(new RetrievedDocument("a", 1)));
         assertThat(result.retrieval().recallAtK().applicable()).isFalse();
         assertThat(result.retrieval().recallAtK().value()).isNull();
         assertThat(result.status()).isEqualTo(EvaluationStatus.PASS);
@@ -72,11 +74,11 @@ class RetrievalEvaluationTest {
 
     @Test
     void suiteMrrAveragesOnlyApplicableCases() {
-        var one = testCase("one", List.of("a"));
-        var two = testCase("two", List.of("b"));
-        var noRetrieval = testCase("none", List.of());
-        var suite = new GoldenTestSuite("suite", 5, List.of(one, two, noRetrieval), Thresholds.defaults());
-        var result = evaluator.evaluate(suite, Map.of(
+        GoldenTestCase one = testCase("one", List.of("a"));
+        GoldenTestCase two = testCase("two", List.of("b"));
+        GoldenTestCase noRetrieval = testCase("none", List.of());
+        GoldenTestSuite suite = new GoldenTestSuite("suite", 5, List.of(one, two, noRetrieval), Thresholds.defaults());
+        EvaluationSuiteResult result = evaluator.evaluate(suite, Map.of(
                 "one", AgentExecution.of("input", List.of(new RetrievedDocument("a", 1)), List.of()),
                 "two", AgentExecution.of("input", List.of(new RetrievedDocument("x", 1), new RetrievedDocument("b", 2)), List.of()),
                 "none", AgentExecution.of("input", List.of(), List.of())));

@@ -3,6 +3,7 @@ package io.github.agentcheck;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.agentcheck.evaluation.EvaluationStatus;
+import io.github.agentcheck.evaluation.EvaluationSuiteResult;
 import io.github.agentcheck.golden.ExpectedBehaviour;
 import io.github.agentcheck.golden.GoldenTestCase;
 import io.github.agentcheck.golden.GoldenTestSuite;
@@ -26,7 +27,7 @@ class SuiteParsingAndSerializationTest {
 
     @Test
     void parsesValidYamlAndMissingOptionalSections() throws IOException {
-        var path = write("""
+        Path path = write("""
                 suite: simple
                 cases:
                   - id: answer-only
@@ -37,7 +38,7 @@ class SuiteParsingAndSerializationTest {
                       retrieval:
                         relevantDocuments: [doc.md]
                 """);
-        var suite = GoldenTestSuite.load(path);
+        GoldenTestSuite suite = GoldenTestSuite.load(path);
         assertThat(suite.suite()).isEqualTo("simple");
         assertThat(suite.retrievalK()).isEqualTo(5);
         assertThat(suite.cases()).hasSize(2);
@@ -55,16 +56,16 @@ class SuiteParsingAndSerializationTest {
 
     @Test
     void allCasesAndThresholdsCanPass() {
-        var suite = suite(new Thresholds(1.0, 1.0, null, 0));
-        var result = new AgentCheck().evaluate(suite, executions(true));
+        GoldenTestSuite suite = suite(new Thresholds(1.0, 1.0, null, 0));
+        EvaluationSuiteResult result = new AgentCheck().evaluate(suite, executions(true));
         assertThat(result.status()).isEqualTo(EvaluationStatus.PASS);
         assertThat(result.passed()).isEqualTo(2);
     }
 
     @Test
     void oneCaseFailureAndThresholdFailureAreVisible() {
-        var suite = suite(new Thresholds(0.8, 0.8, null, 0));
-        var result = new AgentCheck().evaluate(suite, executions(false));
+        GoldenTestSuite suite = suite(new Thresholds(0.8, 0.8, null, 0));
+        EvaluationSuiteResult result = new AgentCheck().evaluate(suite, executions(false));
         assertThat(result.status()).isEqualTo(EvaluationStatus.FAIL);
         assertThat(result.failed()).isEqualTo(1);
         assertThat(result.failureReasons()).anyMatch(reason -> reason.contains("Recall@5"));
@@ -72,9 +73,9 @@ class SuiteParsingAndSerializationTest {
 
     @Test
     void nonApplicableMetricDoesNotBecomeZeroOrFailThreshold() {
-        var testCase = new GoldenTestCase("plain", "plain", ExpectedBehaviour.none());
-        var suite = new GoldenTestSuite("plain", 5, List.of(testCase), new Thresholds(1.0, 1.0, 1.0, 0));
-        var result = new AgentCheck().evaluate(suite, Map.of("plain", AgentExecution.of("plain", List.of(), List.of())));
+        GoldenTestCase testCase = new GoldenTestCase("plain", "plain", ExpectedBehaviour.none());
+        GoldenTestSuite suite = new GoldenTestSuite("plain", 5, List.of(testCase), new Thresholds(1.0, 1.0, 1.0, 0));
+        EvaluationSuiteResult result = new AgentCheck().evaluate(suite, Map.of("plain", AgentExecution.of("plain", List.of(), List.of())));
         assertThat(result.retrieval().mrr().applicable()).isFalse();
         assertThat(result.tools().accuracy().applicable()).isFalse();
         assertThat(result.status()).isEqualTo(EvaluationStatus.PASS);
@@ -82,7 +83,7 @@ class SuiteParsingAndSerializationTest {
 
     @Test
     void jsonHasStableReadableTopLevelFields() throws Exception {
-        var result = new AgentCheck().evaluate(suite(Thresholds.defaults()), executions(true));
+        EvaluationSuiteResult result = new AgentCheck().evaluate(suite(Thresholds.defaults()), executions(true));
         JsonNode json = new ObjectMapper().readTree(result.toJson());
         assertThat(json.path("suite").asText()).isEqualTo("aggregate");
         assertThat(json.path("cases").asInt()).isEqualTo(2);
@@ -92,8 +93,8 @@ class SuiteParsingAndSerializationTest {
     }
 
     private GoldenTestSuite suite(Thresholds thresholds) {
-        var one = new GoldenTestCase("one", "one", new ExpectedBehaviour(List.of("a"), List.of(), List.of()));
-        var two = new GoldenTestCase("two", "two", new ExpectedBehaviour(List.of("b"), List.of(), List.of()));
+        GoldenTestCase one = new GoldenTestCase("one", "one", new ExpectedBehaviour(List.of("a"), List.of(), List.of()));
+        GoldenTestCase two = new GoldenTestCase("two", "two", new ExpectedBehaviour(List.of("b"), List.of(), List.of()));
         return new GoldenTestSuite("aggregate", 5, List.of(one, two), thresholds);
     }
 
@@ -104,7 +105,7 @@ class SuiteParsingAndSerializationTest {
     }
 
     private Path write(String yaml) throws IOException {
-        var path = tempDir.resolve("suite.yaml");
+        Path path = tempDir.resolve("suite.yaml");
         Files.writeString(path, yaml);
         return path;
     }

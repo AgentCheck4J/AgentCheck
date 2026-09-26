@@ -37,6 +37,9 @@ retrievalK: 5
 
 cases:
   - id: shipping-status
+    description: Order tracking must retrieve policy before using tools
+    tags: [smoke, support]
+    enabled: true
     input: Where is my order?
     expected:
       retrieval:
@@ -55,9 +58,18 @@ thresholds:
     maxViolations: 0
 ```
 
-All expectation sections are optional. `retrievalK` defaults to 5. A recall
+All expectation sections and metadata fields are optional. `enabled` defaults
+to `true`; disabled cases are reported as skipped and are never sent to an
+adapter. `retrievalK` defaults to 5. A recall
 threshold may be named for the configured cutoff (for example `recallAt5`) or
 use the generic key `recallAtK`.
+
+Select a deterministic subset by matching any requested tag:
+
+```java
+GoldenTestSuite smokeSuite = GoldenTestSuite.load("support-agent.yaml")
+        .selectByTags("smoke", "critical");
+```
 
 ## Expected vs actual behaviour
 
@@ -103,18 +115,44 @@ AgentAdapter agent = input -> new AgentExecution(
     List.of(new ToolCall("get_order"))
 );
 
-var suite = GoldenTestSuite.load("support-agent.yaml");
-var result = new AgentCheck().evaluate(agent, suite);
+GoldenTestSuite suite = GoldenTestSuite.load("support-agent.yaml");
+EvaluationSuiteResult result = new AgentCheck().evaluate(agent, suite);
 ```
 
 To avoid running an agent, pass executions keyed by case ID:
 
 ```java
-var result = new AgentCheck().evaluate(suite, Map.of("shipping-status", recordedExecution));
+EvaluationSuiteResult result = new AgentCheck().evaluate(
+    suite,
+    Map.of("shipping-status", recordedExecution)
+);
 ```
 
 One case can be evaluated directly with
 `new AgentCheck().evaluate(goldenCase, recordedExecution)`.
+
+## Regression comparison
+
+v0.2 compares a baseline and current evaluation without inventing a composite
+score:
+
+```java
+EvaluationSuiteResult baseline = EvaluationSuiteResult.loadJson(Path.of("baseline.json"));
+EvaluationSuiteResult current = new AgentCheck().evaluate(agent, suite);
+RegressionResult regression = new AgentCheck().compare(baseline, current);
+
+new ConsoleReporter().print(regression, System.out);
+```
+
+A comparison fails when Recall@k, MRR, or tool accuracy decreases, or when the
+number of failed cases, missing tools, unexpected tools, or policy violations
+increases. An applicable baseline metric becoming `N/A` is also a regression;
+a newly applicable metric is not. Metric changes include absolute and relative
+deltas. Results must have the same suite name, retrieval cutoff, and evaluated
+case IDs so that unrelated datasets cannot be compared accidentally.
+
+Both `EvaluationSuiteResult` and `RegressionResult` provide `toJson()` for
+stable, readable artifacts.
 
 ## Retrieval evaluation
 
@@ -167,8 +205,8 @@ as a complete guardrail system.
 ```java
 @Test
 void supportAgentRegression() {
-    var suite = GoldenTestSuite.load("support-agent.yaml");
-    var result = new AgentCheck().evaluate(agent, suite);
+    GoldenTestSuite suite = GoldenTestSuite.load("support-agent.yaml");
+    EvaluationSuiteResult result = new AgentCheck().evaluate(agent, suite);
 
     assertThat(result.status()).isEqualTo(EvaluationStatus.PASS);
     AgentCheckAssertions.assertThat(result).hasNoPolicyViolations();
@@ -177,9 +215,9 @@ void supportAgentRegression() {
 
 ## CI
 
-The included GitHub Actions workflow runs `./gradlew test` on JDK 21. The
-evaluation result also serializes to readable JSON through `result.toJson()` so
-future versions can compare saved baselines.
+The included GitHub Actions workflow runs `./gradlew test` on JDK 21. Evaluation
+results serialize through `result.toJson()` and can be loaded later as
+regression baselines.
 
 ## Architecture
 
@@ -204,7 +242,6 @@ evaluation platforms.
 
 ## Roadmap
 
-- v0.2: baseline/current comparison and richer golden dataset support
 - v0.3: Spring AI adapter
 - v0.4: MCP execution mapping
 - Future: LangChain4j, tool argument matching, nDCG, latency and token/cost

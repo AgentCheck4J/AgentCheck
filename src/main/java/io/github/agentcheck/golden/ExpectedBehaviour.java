@@ -1,6 +1,7 @@
 package io.github.agentcheck.golden;
 
 import java.util.List;
+import java.util.Optional;
 
 public record ExpectedBehaviour(
         List<String> relevantDocuments,
@@ -11,7 +12,7 @@ public record ExpectedBehaviour(
         relevantDocuments = immutableDistinct(relevantDocuments, "relevant document");
         requiredTools = immutableDistinct(requiredTools, "required tool");
         forbiddenTools = immutableDistinct(forbiddenTools, "forbidden tool");
-        var overlap = requiredTools.stream().filter(forbiddenTools::contains).findFirst();
+        Optional<String> overlap = requiredTools.stream().filter(forbiddenTools::contains).findFirst();
         if (overlap.isPresent()) {
             throw new IllegalArgumentException("tool cannot be both required and forbidden: " + overlap.get());
         }
