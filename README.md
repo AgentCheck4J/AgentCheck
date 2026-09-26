@@ -1,0 +1,222 @@
+# AgentCheck
+
+> Deterministic regression testing for Java AI agents.
+
+AgentCheck tests observable AI-agent behaviour against golden test cases.
+
+It evaluates retrieval results, tool usage and policy violations using explicit,
+deterministic rules — without requiring an LLM-as-a-judge.
+
+Bring your agent. We'll test its behaviour.
+
+## Why AgentCheck exists
+
+Changing a model, system prompt, retrieval configuration, tool definition, or
+orchestration layer can silently change an agent's observable behaviour.
+AgentCheck answers one narrow question: **did the agent behave the way its
+golden test set says it should?**
+
+AgentCheck complements broader evaluation frameworks. It deliberately focuses
+on deterministic, behaviour-oriented, regression-focused, golden-test-based,
+Java-native evaluation.
+
+## What problem it solves
+
+AgentCheck compares explicit expectations with either a live adapter result or
+a recorded execution. Evaluation is repeatable, produces visible reasons for
+failure, and ends in a CI-friendly `PASS` or `FAIL`. No model judges another
+model, and there is no opaque composite quality score.
+
+## Golden test sets
+
+Golden YAML is intended to be readable without framework knowledge:
+
+```yaml
+suite: customer-support
+retrievalK: 5
+
+cases:
+  - id: shipping-status
+    input: Where is my order?
+    expected:
+      retrieval:
+        relevantDocuments: [shipping-policy.md]
+      tools:
+        required: [get_order, get_shipping_status]
+        forbidden: [cancel_order]
+
+thresholds:
+  retrieval:
+    recallAt5: 0.80
+    mrr: 0.75
+  tools:
+    accuracy: 0.90
+  policy:
+    maxViolations: 0
+```
+
+All expectation sections are optional. `retrievalK` defaults to 5. A recall
+threshold may be named for the configured cutoff (for example `recallAt5`) or
+use the generic key `recallAtK`.
+
+## Expected vs actual behaviour
+
+`GoldenTestCase` contains expectations. `AgentExecution` contains only facts:
+the input, answer, retrieved documents, and tool calls. Keeping the two models
+separate makes recorded executions reusable and prevents expectations from
+leaking into traces.
+
+```mermaid
+flowchart TD
+    G[Golden Test Set] --> E[Expected Behaviour]
+    A[Agent] --> X[AgentExecution]
+    E --> C[AgentCheck]
+    X --> C
+    C --> R[Retrieval]
+    C --> T[Tools]
+    C --> P[Policies]
+    R --> O[Evaluation Result]
+    T --> O
+    P --> O
+    O --> S[PASS / FAIL]
+```
+
+## Quick Start
+
+Requirements: JDK 21. The Gradle wrapper pins the build tool. Dependency
+artifacts need to be present in the local Gradle cache for a first offline
+build; running once online populates that cache. AgentCheck itself makes no
+network calls and needs no API keys.
+
+```bash
+./gradlew test
+./gradlew run
+```
+
+Integrate any implementation through one method:
+
+```java
+AgentAdapter agent = input -> new AgentExecution(
+    input,
+    "Your order is in transit.",
+    List.of(new RetrievedDocument("shipping-policy.md", 1)),
+    List.of(new ToolCall("get_order"))
+);
+
+var suite = GoldenTestSuite.load("support-agent.yaml");
+var result = new AgentCheck().evaluate(agent, suite);
+```
+
+To avoid running an agent, pass executions keyed by case ID:
+
+```java
+var result = new AgentCheck().evaluate(suite, Map.of("shipping-status", recordedExecution));
+```
+
+One case can be evaluated directly with
+`new AgentCheck().evaluate(goldenCase, recordedExecution)`.
+
+## Retrieval evaluation
+
+AgentCheck orders retrieved documents by ascending declared rank, removes
+duplicate IDs after their first occurrence, and preserves each retained
+document's declared rank.
+
+- **Recall@k** is the number of unique relevant document IDs in the first `k`
+  unique results divided by the number of unique relevant IDs.
+- **Reciprocal Rank** is `1 / rank` for the first relevant document in that
+  normalized ranking, or zero when no relevant document was retrieved.
+- **MRR** is the arithmetic mean of reciprocal rank across applicable cases.
+
+An empty result has zero recall and reciprocal rank when relevance judgments
+exist. A relevant result outside `k` contributes to reciprocal rank but not
+Recall@k. With no relevant documents, retrieval is `N/A`, not zero, and is
+excluded from suite aggregation. A retrieval case passes its behavioural check
+only when Recall@k is 1.0; suite thresholds can enforce aggregate minima.
+
+This mirrors a familiar Information Retrieval pattern:
+
+```text
+Traditional IR: Queries + Relevance Judgments + Ranked Results -> Metrics
+AgentCheck:     Inputs  + Expected Behaviour  + Execution Traces -> Deterministic Evaluation
+```
+
+This is conceptual inspiration, not a claim of a novel research contribution.
+
+## Tool behaviour
+
+Calls are compared by tool name; arguments are intentionally ignored in v0.1.
+Duplicate calls count once. Required calls are present or missing. Calls named
+as forbidden are reported separately from unexpected calls, which are names in
+neither expected list.
+
+Tool accuracy is the number of satisfied assertions (required tools called plus
+forbidden tools not called) divided by all required and forbidden assertions
+plus unexpected calls. Suite tool accuracy is the mean across cases with tool
+expectations. With no tool expectations, evaluation is `N/A` and calls are not
+judged.
+
+## Policy violations
+
+In v0.1, and only in v0.1's deliberately small policy model, each distinct
+forbidden tool call is a `FORBIDDEN_TOOL_CALL` violation. This is not presented
+as a complete guardrail system.
+
+## JUnit usage
+
+```java
+@Test
+void supportAgentRegression() {
+    var suite = GoldenTestSuite.load("support-agent.yaml");
+    var result = new AgentCheck().evaluate(agent, suite);
+
+    assertThat(result.status()).isEqualTo(EvaluationStatus.PASS);
+    AgentCheckAssertions.assertThat(result).hasNoPolicyViolations();
+}
+```
+
+## CI
+
+The included GitHub Actions workflow runs `./gradlew test` on JDK 21. The
+evaluation result also serializes to readable JSON through `result.toJson()` so
+future versions can compare saved baselines.
+
+## Architecture
+
+The small public API consists of the `AgentCheck` facade and `AgentAdapter`,
+immutable execution/golden records, immutable result records, the console
+reporter, and one assertion helper. Parsing and metric calculations remain
+behind the facade. There are no Spring AI, LangChain4j, MCP, database, agent
+framework, or telemetry dependencies.
+
+## Example
+
+[`examples/customer-support`](examples/customer-support) contains three tiny
+documents, a golden suite, and `FakeSupportAgent`. The fake is deterministic and
+is not presented as an AI agent. Run it with `./gradlew run`.
+
+## What AgentCheck does NOT do
+
+AgentCheck v0.1 does not orchestrate agents, implement RAG, score semantic answer
+quality, manage prompts, trace distributed systems, provide a UI, or call an
+LLM as a judge. It is not a generic policy engine and does not replace broader
+evaluation platforms.
+
+## Roadmap
+
+- v0.2: baseline/current comparison and richer golden dataset support
+- v0.3: Spring AI adapter
+- v0.4: MCP execution mapping
+- Future: LangChain4j, tool argument matching, nDCG, latency and token/cost
+  thresholds, optional LLM-based evaluators, and OpenTelemetry trace import
+
+No release dates are implied.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Small, deterministic additions with
+clear tests are preferred over broad abstractions.
+
+## License
+
+MIT License. See [LICENSE](LICENSE).

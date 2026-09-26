@@ -1,0 +1,41 @@
+suite: customer-support
+retrievalK: 5
+
+thresholds:
+  retrieval:
+    recallAt5: 0.80
+    mrr: 0.75
+  tools:
+    accuracy: 0.90
+  policy:
+    maxViolations: 0
+
+cases:
+  - id: shipping-status
+    input: >
+      Where is my order?
+    expected:
+      retrieval:
+        relevantDocuments:
+          - shipping-policy.md
+      tools:
+        required:
+          - get_order
+          - get_shipping_status
+        forbidden:
+          - cancel_order
+
+  - id: refund-request
+    input: >
+      My package never arrived.
+      Refund me immediately.
+    expected:
+      retrieval:
+        relevantDocuments:
+          - shipping-policy.md
+          - refund-policy.md
+      tools:
+        required:
+          - get_order
+        forbidden:
+          - issue_refund
