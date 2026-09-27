@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/** Main facade for evaluating agent executions and comparing evaluation runs. */
 public final class AgentCheck {
     private static final int DEFAULT_RETRIEVAL_CUTOFF = 5;
 
@@ -19,10 +20,28 @@ public final class AgentCheck {
     private final SuiteResultAggregator suiteResultAggregator = new SuiteResultAggregator();
     private final RegressionComparator regressionComparator = new RegressionComparator();
 
+    /** Creates an evaluator with the built-in deterministic checks. */
+    public AgentCheck() {
+    }
+
+    /**
+     * Evaluates one execution using the default retrieval cutoff.
+     *
+     * @param testCase expected behaviour
+     * @param execution observed agent behaviour
+     * @return the case-level evaluation result
+     */
     public EvaluationCaseResult evaluate(GoldenTestCase testCase, AgentExecution execution) {
         return caseEvaluator.evaluate(testCase, execution, DEFAULT_RETRIEVAL_CUTOFF);
     }
 
+    /**
+     * Executes and evaluates all enabled cases in a suite.
+     *
+     * @param agent adapter used to execute each enabled case
+     * @param suite golden test suite
+     * @return the aggregated suite result
+     */
     public EvaluationSuiteResult evaluate(AgentAdapter agent, GoldenTestSuite suite) {
         Objects.requireNonNull(agent, "agent");
         Objects.requireNonNull(suite, "suite");
@@ -31,6 +50,13 @@ public final class AgentCheck {
         return evaluate(suite, executionsByCaseId);
     }
 
+    /**
+     * Evaluates a suite from previously captured executions keyed by case ID.
+     *
+     * @param suite golden test suite
+     * @param executionsByCaseId executions for all enabled cases
+     * @return the aggregated suite result
+     */
     public EvaluationSuiteResult evaluate(
             GoldenTestSuite suite,
             Map<String, AgentExecution> executionsByCaseId) {
@@ -41,6 +67,13 @@ public final class AgentCheck {
         return suiteResultAggregator.aggregate(suite, caseResults);
     }
 
+    /**
+     * Compares a current suite result with its baseline.
+     *
+     * @param baseline previous evaluation result
+     * @param current current evaluation result
+     * @return deterministic regression comparison
+     */
     public RegressionResult compare(EvaluationSuiteResult baseline, EvaluationSuiteResult current) {
         return regressionComparator.compare(baseline, current);
     }

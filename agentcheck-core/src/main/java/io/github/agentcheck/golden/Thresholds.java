@@ -1,6 +1,15 @@
 package io.github.agentcheck.golden;
 
+/**
+ * Optional aggregate thresholds applied to a suite result.
+ *
+ * @param recallAtK minimum mean recall at the configured cutoff
+ * @param mrr minimum mean reciprocal rank
+ * @param toolAccuracy minimum mean tool accuracy
+ * @param maxPolicyViolations maximum allowed policy violations
+ */
 public record Thresholds(Double recallAtK, Double mrr, Double toolAccuracy, Integer maxPolicyViolations) {
+    /** Validates all configured thresholds. */
     public Thresholds {
         validateFraction(recallAtK, "retrieval recall threshold");
         validateFraction(mrr, "retrieval MRR threshold");
@@ -10,6 +19,11 @@ public record Thresholds(Double recallAtK, Double mrr, Double toolAccuracy, Inte
         }
     }
 
+    /**
+     * Creates thresholds that only reject policy violations.
+     *
+     * @return default thresholds
+     */
     public static Thresholds defaults() {
         return new Thresholds(null, null, null, 0);
     }

@@ -11,10 +11,21 @@ import io.github.agentcheck.regression.RegressionResult;
 import java.io.PrintStream;
 import java.util.Locale;
 
+/** Renders evaluation and regression results as human-readable console text. */
 public final class ConsoleReporter {
     private static final String SECTION_SEPARATOR = "------------------------\n";
     private static final String REGRESSION_SEPARATOR = "--------------------------------------------------------\n";
 
+    /** Creates a console reporter. */
+    public ConsoleReporter() {
+    }
+
+    /**
+     * Renders an evaluation result.
+     *
+     * @param result suite result
+     * @return formatted console text
+     */
     public String render(EvaluationSuiteResult result) {
         StringBuilder output = new StringBuilder();
         appendSuiteHeader(output, result);
@@ -26,10 +37,22 @@ public final class ConsoleReporter {
         return output.toString();
     }
 
+    /**
+     * Prints an evaluation result.
+     *
+     * @param result suite result
+     * @param output destination stream
+     */
     public void print(EvaluationSuiteResult result, PrintStream output) {
         output.print(render(result));
     }
 
+    /**
+     * Renders a regression comparison.
+     *
+     * @param result regression result
+     * @return formatted console text
+     */
     public String render(RegressionResult result) {
         StringBuilder output = new StringBuilder();
         appendRegressionHeader(output, result);
@@ -40,6 +63,12 @@ public final class ConsoleReporter {
         return output.toString();
     }
 
+    /**
+     * Prints a regression comparison.
+     *
+     * @param result regression result
+     * @param output destination stream
+     */
     public void print(RegressionResult result, PrintStream output) {
         output.print(render(result));
     }

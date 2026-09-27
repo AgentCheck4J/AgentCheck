@@ -7,9 +7,15 @@ import io.github.agentcheck.report.ConsoleReporter;
 
 import java.nio.file.Path;
 
+/** Runs the deterministic customer-support evaluation example. */
 public final class CustomerSupportExample {
     private CustomerSupportExample() { }
 
+    /**
+     * Runs the example.
+     *
+     * @param arguments ignored command-line arguments
+     */
     public static void main(String[] arguments) {
         Path suitePath = arguments.length == 0
                 ? Path.of("examples/customer-support/golden.yaml")

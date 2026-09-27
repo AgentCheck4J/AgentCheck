@@ -10,6 +10,10 @@ import java.util.List;
 
 /** Maps observed MCP tool requests into AgentCheck execution data. */
 public final class McpExecutionMapper {
+    /** Creates an MCP execution mapper. */
+    public McpExecutionMapper() {
+    }
+
     /**
      * Creates an execution from caller-owned agent output and observed MCP requests.
      *

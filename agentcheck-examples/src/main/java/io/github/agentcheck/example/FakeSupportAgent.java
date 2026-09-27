@@ -7,7 +7,12 @@ import io.github.agentcheck.model.ToolCall;
 
 import java.util.List;
 
+/** Deterministic fake agent used by the customer-support example. */
 public final class FakeSupportAgent implements AgentAdapter {
+    /** Creates the fake support agent. */
+    public FakeSupportAgent() {
+    }
+
     @Override
     public AgentExecution execute(String input) {
         if (isOrderStatusQuestion(input)) {

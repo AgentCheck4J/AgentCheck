@@ -3,11 +3,19 @@ package io.github.agentcheck.golden;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Expected retrieval and tool behaviour for one golden test case.
+ *
+ * @param relevantDocuments document IDs that should be retrieved
+ * @param requiredTools tools that must be called
+ * @param forbiddenTools tools that must not be called
+ */
 public record ExpectedBehaviour(
         List<String> relevantDocuments,
         List<String> requiredTools,
         List<String> forbiddenTools) {
 
+    /** Validates, normalizes, and defensively copies the expectations. */
     public ExpectedBehaviour {
         relevantDocuments = normalizeUniqueValues(relevantDocuments, "relevant document");
         requiredTools = normalizeUniqueValues(requiredTools, "required tool");
@@ -15,6 +23,11 @@ public record ExpectedBehaviour(
         requireDisjointToolExpectations(requiredTools, forbiddenTools);
     }
 
+    /**
+     * Creates an expectation without retrieval or tool assertions.
+     *
+     * @return empty expected behaviour
+     */
     public static ExpectedBehaviour none() {
         return new ExpectedBehaviour(List.of(), List.of(), List.of());
     }

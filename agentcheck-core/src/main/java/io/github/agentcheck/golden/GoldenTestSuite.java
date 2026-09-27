@@ -8,12 +8,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Immutable golden test suite and its aggregate thresholds.
+ *
+ * @param suite suite name
+ * @param retrievalK retrieval cutoff used for every case
+ * @param cases ordered golden test cases
+ * @param thresholds aggregate pass/fail thresholds
+ */
 public record GoldenTestSuite(
         String suite,
         int retrievalK,
         List<GoldenTestCase> cases,
         Thresholds thresholds) {
 
+    /** Validates and defensively copies the suite definition. */
     public GoldenTestSuite {
         requireSuiteName(suite);
         requirePositiveRetrievalCutoff(retrievalK);
@@ -22,14 +31,32 @@ public record GoldenTestSuite(
         thresholds = thresholds == null ? Thresholds.defaults() : thresholds;
     }
 
+    /**
+     * Loads a YAML suite from a path string.
+     *
+     * @param path YAML file path
+     * @return parsed golden test suite
+     */
     public static GoldenTestSuite load(String path) {
         return load(Path.of(path));
     }
 
+    /**
+     * Loads a YAML suite from a path.
+     *
+     * @param path YAML file
+     * @return parsed golden test suite
+     */
     public static GoldenTestSuite load(Path path) {
         return GoldenTestSuiteParser.load(path);
     }
 
+    /**
+     * Selects cases matching at least one requested tag.
+     *
+     * @param selectedTags tags to match; no tags returns this suite unchanged
+     * @return a suite containing only matching cases
+     */
     public GoldenTestSuite selectByTags(String... selectedTags) {
         if (selectedTags == null || selectedTags.length == 0) {
             return this;

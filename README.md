@@ -93,7 +93,19 @@ flowchart TD
     O --> S[PASS / FAIL]
 ```
 
-## Quick Start
+## Choose a module
+
+| Module | Use it for | Includes |
+| --- | --- | --- |
+| `agentcheck-core` | Framework-independent evaluation and recording | AgentCheck API and Jackson |
+| `agentcheck-spring-ai` | Running evaluations through Spring AI | Core and the Spring AI chat client |
+| `agentcheck-mcp` | Mapping observed MCP tool requests | Core and the official MCP Java SDK |
+
+Use only `agentcheck-core` unless an application needs one of the optional
+integration modules. The independent consumer tests verify these dependency
+boundaries from the generated Maven POMs.
+
+## Core quick start
 
 Requirements: JDK 21. The Gradle wrapper pins the build tool. Dependency
 artifacts need to be present in the local Gradle cache for a first offline
@@ -103,6 +115,14 @@ network calls and needs no API keys.
 ```bash
 ./gradlew test
 ./gradlew run
+```
+
+Within this source checkout, a Gradle module can depend on Core with:
+
+```groovy
+dependencies {
+    implementation project(':agentcheck-core')
+}
 ```
 
 Integrate any implementation through one method:

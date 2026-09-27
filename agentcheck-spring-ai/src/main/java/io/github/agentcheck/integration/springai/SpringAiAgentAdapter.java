@@ -9,14 +9,26 @@ import org.springframework.ai.document.Document;
 import java.util.Objects;
 import java.util.function.Function;
 
+/** Executes a configured Spring AI {@link ChatClient} and maps its observable response. */
 public final class SpringAiAgentAdapter implements AgentAdapter {
     private final ChatClient chatClient;
     private final SpringAiResponseMapper responseMapper;
 
+    /**
+     * Creates an adapter using each Spring AI document's generated ID.
+     *
+     * @param chatClient configured chat client
+     */
     public SpringAiAgentAdapter(ChatClient chatClient) {
         this(chatClient, Document::getId);
     }
 
+    /**
+     * Creates an adapter using a caller-defined stable document ID.
+     *
+     * @param chatClient configured chat client
+     * @param documentIdExtractor extractor for stable retrieval document IDs
+     */
     public SpringAiAgentAdapter(
             ChatClient chatClient,
             Function<Document, String> documentIdExtractor) {

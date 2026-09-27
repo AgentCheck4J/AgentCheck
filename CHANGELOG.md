@@ -15,6 +15,7 @@ versioning once releases begin.
   metadata, and optional in-memory PGP signing
 - Independent consumer smoke tests for Core, Spring AI, and MCP publication
   metadata
+- Public API Javadocs and module-selection quick starts
 
 ### Changed
 

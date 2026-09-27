@@ -2,6 +2,16 @@ package io.github.agentcheck.golden;
 
 import java.util.List;
 
+/**
+ * One named input and its expected observable agent behaviour.
+ *
+ * @param id unique case identifier within its suite
+ * @param input input sent to the agent
+ * @param expected expected retrieval and tool behaviour
+ * @param description optional human-readable description
+ * @param tags tags used for deterministic suite selection
+ * @param enabled whether the case should be executed
+ */
 public record GoldenTestCase(
         String id,
         String input,
@@ -10,6 +20,7 @@ public record GoldenTestCase(
         List<String> tags,
         boolean enabled) {
 
+    /** Validates and normalizes the case definition. */
     public GoldenTestCase {
         requireNonBlank(id, "case id");
         requireNonBlank(input, "case input");
@@ -18,6 +29,13 @@ public record GoldenTestCase(
         tags = normalizeTags(tags);
     }
 
+    /**
+     * Creates an enabled case without a description or tags.
+     *
+     * @param id unique case identifier
+     * @param input input sent to the agent
+     * @param expected expected behaviour
+     */
     public GoldenTestCase(String id, String input, ExpectedBehaviour expected) {
         this(id, input, expected, "", List.of(), true);
     }

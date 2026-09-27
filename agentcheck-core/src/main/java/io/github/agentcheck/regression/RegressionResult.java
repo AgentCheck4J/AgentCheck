@@ -7,6 +7,15 @@ import io.github.agentcheck.evaluation.EvaluationStatus;
 
 import java.util.List;
 
+/**
+ * Deterministic comparison between baseline and current suite results.
+ *
+ * @param suite compared suite name
+ * @param metrics numeric metric comparisons
+ * @param counts integer count comparisons
+ * @param status overall comparison status
+ * @param regressionReasons human-readable detected regressions
+ */
 public record RegressionResult(
         String suite,
         List<MetricComparison> metrics,
@@ -17,12 +26,18 @@ public record RegressionResult(
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT);
 
+    /** Creates an immutable regression result. */
     public RegressionResult {
         metrics = List.copyOf(metrics);
         counts = List.copyOf(counts);
         regressionReasons = List.copyOf(regressionReasons);
     }
 
+    /**
+     * Serializes this comparison as stable, indented JSON.
+     *
+     * @return JSON representation
+     */
     public String toJson() {
         try {
             return JSON_MAPPER.writeValueAsString(this);

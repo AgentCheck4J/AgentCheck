@@ -23,6 +23,11 @@ public final class McpMappingExample {
     private McpMappingExample() {
     }
 
+    /**
+     * Runs the example.
+     *
+     * @param arguments ignored command-line arguments
+     */
     public static void main(String[] arguments) {
         CallToolRequest toolRequest = CallToolRequest.builder("get_order")
                 .arguments(Map.of("orderId", 42))
