@@ -36,21 +36,21 @@ subprojects {
 }
 
 tasks.named('clean') {
-    dependsOn ':agentcheck-core:clean', ':agentcheck-spring-ai:clean'
+    dependsOn ':agentcheck-core:clean', ':agentcheck-mcp:clean', ':agentcheck-spring-ai:clean'
 }
 
 tasks.named('check') {
-    dependsOn ':agentcheck-core:check', ':agentcheck-spring-ai:check'
+    dependsOn ':agentcheck-core:check', ':agentcheck-mcp:check', ':agentcheck-spring-ai:check'
 }
 
 tasks.named('build') {
-    dependsOn ':agentcheck-core:build', ':agentcheck-spring-ai:build'
+    dependsOn ':agentcheck-core:build', ':agentcheck-mcp:build', ':agentcheck-spring-ai:build'
 }
 
 tasks.register('test') {
     group = 'verification'
     description = 'Runs tests in all AgentCheck modules.'
-    dependsOn ':agentcheck-core:test', ':agentcheck-spring-ai:test'
+    dependsOn ':agentcheck-core:test', ':agentcheck-mcp:test', ':agentcheck-spring-ai:test'
 }
 
 tasks.register('run') {

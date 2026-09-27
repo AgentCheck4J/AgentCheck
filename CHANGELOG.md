@@ -5,6 +5,16 @@ versioning once releases begin.
 
 ## [Unreleased]
 
+### Added
+
+- Optional `agentcheck-mcp` module based on the official MCP Java SDK 2.0.1
+- Deterministic mapping of ordered MCP tool requests and JSON arguments into
+  AgentCheck execution traces
+
+### Fixed
+
+- Preserve valid JSON `null` values in captured tool arguments
+
 ## [0.4.0] - 2026-09-27
 
 ### Added

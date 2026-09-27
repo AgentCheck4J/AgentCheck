@@ -249,6 +249,35 @@ Tool arguments are retained as JSON objects even though deterministic argument
 matching is not yet part of AgentCheck's evaluator. Streaming is deliberately
 outside the v0.3 adapter.
 
+## MCP integration
+
+The `agentcheck-mcp` module maps tool requests from the official MCP Java SDK
+2.0.1 into AgentCheck execution traces without starting a client or server:
+
+```groovy
+dependencies {
+    implementation project(':agentcheck-mcp')
+}
+```
+
+```java
+CallToolRequest request = CallToolRequest.builder("get_order")
+        .arguments(Map.of("orderId", 42))
+        .build();
+
+AgentExecution execution = new McpExecutionMapper().map(
+        "Where is my order?",
+        "Your order is in transit.",
+        List.of(new RetrievedDocument("shipping-policy.md", 1)),
+        List.of(request));
+```
+
+The caller remains responsible for observing requests at its MCP client or
+server boundary and for providing the agent input, final answer, and retrieved
+documents. MCP itself does not define an agent's final answer, so AgentCheck
+does not infer one. Request order, tool names, and JSON arguments are preserved;
+tool results and network transport are deliberately outside this mapper.
+
 ## Regression comparison
 
 v0.2 compares a baseline and current evaluation without inventing a composite
@@ -342,10 +371,10 @@ regression baselines.
 The `agentcheck-core` module contains the `AgentCheck` facade and `AgentAdapter`,
 immutable execution/golden records, immutable result records, the console
 reporter, and one assertion helper. Parsing and metric calculations remain
-behind the facade. The `agentcheck-spring-ai` module contains the optional
-Spring AI adapter and declares Spring AI as an explicit API dependency. Core
-evaluation has no framework runtime dependency, and there are no LangChain4j,
-MCP, database, or telemetry dependencies.
+behind the facade. The `agentcheck-spring-ai` and `agentcheck-mcp` modules
+contain optional framework integrations and declare their SDKs as explicit API
+dependencies. Core evaluation has no framework runtime dependency, and there
+are no LangChain4j, database, or telemetry dependencies.
 
 ## Example
 
@@ -364,7 +393,7 @@ evaluation platforms.
 
 - TODO before publishing to Maven Central: register and verify the
   `io.github.agentcheck4j` namespace, then configure signed publication of
-  `agentcheck-core` and `agentcheck-spring-ai`
+  `agentcheck-core`, `agentcheck-spring-ai`, and `agentcheck-mcp`
 - v0.5: MCP execution mapping
 - Future: LangChain4j, tool argument matching, nDCG, latency and token/cost
   thresholds, optional LLM-based evaluators, and OpenTelemetry trace import
