@@ -6,13 +6,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import java.util.List;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
-@JsonPropertyOrder({"suite", "cases", "passed", "failed", "skipped", "retrieval", "tools", "policy", "status", "failureReasons", "caseResults"})
+@JsonPropertyOrder({
+        "suite", "cases", "passed", "failed", "skipped", "retrieval", "tools",
+        "policy", "status", "failureReasons", "caseResults"
+})
 public record EvaluationSuiteResult(
         String suite,
         int cases,
@@ -25,6 +28,9 @@ public record EvaluationSuiteResult(
         EvaluationStatus status,
         List<String> failureReasons,
         List<EvaluationCaseResult> caseResults) {
+
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT);
 
     public EvaluationSuiteResult {
         failureReasons = List.copyOf(failureReasons);
@@ -52,9 +58,7 @@ public record EvaluationSuiteResult(
 
     public String toJson() {
         try {
-            return new ObjectMapper()
-                    .enable(SerializationFeature.INDENT_OUTPUT)
-                    .writeValueAsString(this);
+            return JSON_MAPPER.writeValueAsString(this);
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException("Could not serialize evaluation result", exception);
         }
@@ -62,9 +66,11 @@ public record EvaluationSuiteResult(
 
     public static EvaluationSuiteResult loadJson(Path path) {
         try (InputStream input = Files.newInputStream(path)) {
-            return new ObjectMapper().readValue(input, EvaluationSuiteResult.class);
+            return JSON_MAPPER.readValue(input, EvaluationSuiteResult.class);
         } catch (IOException | RuntimeException exception) {
-            throw new IllegalArgumentException("Could not load evaluation result '" + path + "': " + exception.getMessage(), exception);
+            throw new IllegalArgumentException(
+                    "Could not load evaluation result '" + path + "': " + exception.getMessage(),
+                    exception);
         }
     }
 }

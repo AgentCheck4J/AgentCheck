@@ -12,6 +12,13 @@ versioning once releases begin.
   and tool calls into AgentCheck execution traces
 - Custom Spring AI document ID extraction for stable golden-test identifiers
 
+### Changed
+
+- Split evaluation, suite aggregation, regression comparison, golden-suite
+  parsing, Spring AI mapping, and console rendering into focused components
+- Standardized explicit types, intention-revealing names, validation methods,
+  and immutable intermediate results throughout the codebase
+
 ## [0.2.0] - 2026-09-26
 
 ### Added

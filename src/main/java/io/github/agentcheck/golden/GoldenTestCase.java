@@ -11,20 +11,32 @@ public record GoldenTestCase(
         boolean enabled) {
 
     public GoldenTestCase {
-        if (id == null || id.isBlank()) throw new IllegalArgumentException("case id must not be blank");
-        if (input == null || input.isBlank()) throw new IllegalArgumentException("case input must not be blank");
+        requireNonBlank(id, "case id");
+        requireNonBlank(input, "case input");
         expected = expected == null ? ExpectedBehaviour.none() : expected;
         description = description == null ? "" : description.strip();
-        tags = tags == null ? List.of() : tags.stream()
-                .map(tag -> {
-                    if (tag == null || tag.isBlank()) throw new IllegalArgumentException("case tag must not be blank");
-                    return tag.strip();
-                })
-                .distinct()
-                .toList();
+        tags = normalizeTags(tags);
     }
 
     public GoldenTestCase(String id, String input, ExpectedBehaviour expected) {
         this(id, input, expected, "", List.of(), true);
+    }
+
+    private static List<String> normalizeTags(List<String> tags) {
+        if (tags == null) {
+            return List.of();
+        }
+        return tags.stream().map(GoldenTestCase::normalizeTag).distinct().toList();
+    }
+
+    private static String normalizeTag(String tag) {
+        requireNonBlank(tag, "case tag");
+        return tag.strip();
+    }
+
+    private static void requireNonBlank(String value, String description) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(description + " must not be blank");
+        }
     }
 }

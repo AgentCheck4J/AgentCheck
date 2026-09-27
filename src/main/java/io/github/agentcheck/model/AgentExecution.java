@@ -9,7 +9,9 @@ public record AgentExecution(
         List<ToolCall> toolCalls) {
 
     public AgentExecution {
-        if (input == null) throw new IllegalArgumentException("execution input must not be null");
+        if (input == null) {
+            throw new IllegalArgumentException("execution input must not be null");
+        }
         answer = answer == null ? "" : answer;
         retrievedDocuments = retrievedDocuments == null ? List.of() : List.copyOf(retrievedDocuments);
         toolCalls = toolCalls == null ? List.of() : List.copyOf(toolCalls);

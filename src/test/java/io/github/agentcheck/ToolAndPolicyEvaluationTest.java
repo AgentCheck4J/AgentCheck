@@ -1,7 +1,7 @@
 package io.github.agentcheck;
 
-import io.github.agentcheck.evaluation.EvaluationStatus;
 import io.github.agentcheck.evaluation.EvaluationCaseResult;
+import io.github.agentcheck.evaluation.EvaluationStatus;
 import io.github.agentcheck.golden.ExpectedBehaviour;
 import io.github.agentcheck.golden.GoldenTestCase;
 import io.github.agentcheck.model.AgentExecution;
@@ -9,16 +9,21 @@ import io.github.agentcheck.model.ToolCall;
 import io.github.agentcheck.policy.PolicyViolationType;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ToolAndPolicyEvaluationTest {
-    private final AgentCheck evaluator = new AgentCheck();
+    private final AgentCheck agentCheck = new AgentCheck();
 
     @Test
     void allRequiredToolsAndNoForbiddenCallsPass() {
-        EvaluationCaseResult result = evaluate(List.of("get_order", "status"), List.of("cancel"), "get_order", "status");
+        EvaluationCaseResult result = evaluate(
+                List.of("get_order", "status"),
+                List.of("cancel"),
+                "get_order",
+                "status");
         assertThat(result.tools().accuracy().value()).isEqualTo(1.0);
         assertThat(result.tools().missingRequired()).isEmpty();
         assertThat(result.status()).isEqualTo(EvaluationStatus.PASS);
@@ -26,7 +31,12 @@ class ToolAndPolicyEvaluationTest {
 
     @Test
     void reportsMissingUnexpectedAndForbiddenToolsSeparately() {
-        EvaluationCaseResult result = evaluate(List.of("get_order", "status"), List.of("cancel"), "get_order", "cancel", "weather");
+        EvaluationCaseResult result = evaluate(
+                List.of("get_order", "status"),
+                List.of("cancel"),
+                "get_order",
+                "cancel",
+                "weather");
         assertThat(result.tools().calledRequired()).containsExactly("get_order");
         assertThat(result.tools().missingRequired()).containsExactly("status");
         assertThat(result.tools().unexpectedCalled()).containsExactly("weather");
@@ -57,10 +67,16 @@ class ToolAndPolicyEvaluationTest {
         assertThat(result.policyViolations()).hasSize(2);
     }
 
-    private io.github.agentcheck.evaluation.EvaluationCaseResult evaluate(
-            List<String> required, List<String> forbidden, String... called) {
-        GoldenTestCase testCase = new GoldenTestCase("case", "input", new ExpectedBehaviour(List.of(), required, forbidden));
-        List<ToolCall> tools = java.util.Arrays.stream(called).map(ToolCall::new).toList();
-        return evaluator.evaluate(testCase, AgentExecution.of("input", List.of(), tools));
+    private EvaluationCaseResult evaluate(
+            List<String> requiredTools,
+            List<String> forbiddenTools,
+            String... calledTools) {
+        ExpectedBehaviour expectedBehaviour = new ExpectedBehaviour(
+                List.of(),
+                requiredTools,
+                forbiddenTools);
+        GoldenTestCase testCase = new GoldenTestCase("case", "input", expectedBehaviour);
+        List<ToolCall> toolCalls = Arrays.stream(calledTools).map(ToolCall::new).toList();
+        return agentCheck.evaluate(testCase, AgentExecution.of("input", List.of(), toolCalls));
     }
 }

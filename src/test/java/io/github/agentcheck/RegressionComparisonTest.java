@@ -107,7 +107,12 @@ class RegressionComparisonTest {
     @Test
     void consoleReporterShowsBaselineCurrentAndReasons() {
         String output = new ConsoleReporter().render(agentCheck.compare(goodResult(), regressedResult()));
-        assertThat(output).contains("AgentCheck Regression", "Baseline", "Current", "Policy violations", "Result                 FAIL");
+        assertThat(output).contains(
+                "AgentCheck Regression",
+                "Baseline",
+                "Current",
+                "Policy violations",
+                "Result                 FAIL");
     }
 
     private EvaluationSuiteResult goodResult() {

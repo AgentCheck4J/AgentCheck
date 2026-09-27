@@ -14,7 +14,8 @@ public final class CustomerSupportExample {
         Path suitePath = args.length == 0
                 ? Path.of("examples/customer-support/golden.yaml")
                 : Path.of(args[0]);
-        EvaluationSuiteResult result = new AgentCheck().evaluate(new FakeSupportAgent(), GoldenTestSuite.load(suitePath));
+        GoldenTestSuite suite = GoldenTestSuite.load(suitePath);
+        EvaluationSuiteResult result = new AgentCheck().evaluate(new FakeSupportAgent(), suite);
         new ConsoleReporter().print(result, System.out);
     }
 }

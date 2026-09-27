@@ -14,6 +14,9 @@ public record RegressionResult(
         EvaluationStatus status,
         List<String> regressionReasons) {
 
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT);
+
     public RegressionResult {
         metrics = List.copyOf(metrics);
         counts = List.copyOf(counts);
@@ -22,9 +25,7 @@ public record RegressionResult(
 
     public String toJson() {
         try {
-            return new ObjectMapper()
-                    .enable(SerializationFeature.INDENT_OUTPUT)
-                    .writeValueAsString(this);
+            return JSON_MAPPER.writeValueAsString(this);
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException("Could not serialize regression result", exception);
         }

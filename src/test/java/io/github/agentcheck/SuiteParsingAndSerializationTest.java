@@ -23,7 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SuiteParsingAndSerializationTest {
-    @TempDir Path tempDir;
+    @TempDir
+    Path tempDir;
 
     @Test
     void parsesValidYamlAndMissingOptionalSections() throws IOException {
@@ -74,8 +75,14 @@ class SuiteParsingAndSerializationTest {
     @Test
     void nonApplicableMetricDoesNotBecomeZeroOrFailThreshold() {
         GoldenTestCase testCase = new GoldenTestCase("plain", "plain", ExpectedBehaviour.none());
-        GoldenTestSuite suite = new GoldenTestSuite("plain", 5, List.of(testCase), new Thresholds(1.0, 1.0, 1.0, 0));
-        EvaluationSuiteResult result = new AgentCheck().evaluate(suite, Map.of("plain", AgentExecution.of("plain", List.of(), List.of())));
+        GoldenTestSuite suite = new GoldenTestSuite(
+                "plain",
+                5,
+                List.of(testCase),
+                new Thresholds(1.0, 1.0, 1.0, 0));
+        EvaluationSuiteResult result = new AgentCheck().evaluate(
+                suite,
+                Map.of("plain", AgentExecution.of("plain", List.of(), List.of())));
         assertThat(result.retrieval().mrr().applicable()).isFalse();
         assertThat(result.tools().accuracy().applicable()).isFalse();
         assertThat(result.status()).isEqualTo(EvaluationStatus.PASS);
@@ -93,15 +100,24 @@ class SuiteParsingAndSerializationTest {
     }
 
     private GoldenTestSuite suite(Thresholds thresholds) {
-        GoldenTestCase one = new GoldenTestCase("one", "one", new ExpectedBehaviour(List.of("a"), List.of(), List.of()));
-        GoldenTestCase two = new GoldenTestCase("two", "two", new ExpectedBehaviour(List.of("b"), List.of(), List.of()));
+        GoldenTestCase one = new GoldenTestCase(
+                "one",
+                "one",
+                new ExpectedBehaviour(List.of("a"), List.of(), List.of()));
+        GoldenTestCase two = new GoldenTestCase(
+                "two",
+                "two",
+                new ExpectedBehaviour(List.of("b"), List.of(), List.of()));
         return new GoldenTestSuite("aggregate", 5, List.of(one, two), thresholds);
     }
 
     private Map<String, AgentExecution> executions(boolean secondPasses) {
         return Map.of(
                 "one", AgentExecution.of("one", List.of(new RetrievedDocument("a", 1)), List.of()),
-                "two", AgentExecution.of("two", secondPasses ? List.of(new RetrievedDocument("b", 1)) : List.of(), List.of()));
+                "two", AgentExecution.of(
+                        "two",
+                        secondPasses ? List.of(new RetrievedDocument("b", 1)) : List.of(),
+                        List.of()));
     }
 
     private Path write(String yaml) throws IOException {

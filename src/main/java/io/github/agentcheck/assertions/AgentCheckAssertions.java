@@ -6,7 +6,9 @@ public final class AgentCheckAssertions {
     private final EvaluationSuiteResult actual;
 
     private AgentCheckAssertions(EvaluationSuiteResult actual) {
-        if (actual == null) throw new AssertionError("Expected an evaluation result but was null");
+        if (actual == null) {
+            throw new AssertionError("Expected an evaluation result but was null");
+        }
         this.actual = actual;
     }
 

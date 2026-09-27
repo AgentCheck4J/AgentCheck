@@ -68,14 +68,14 @@ class SpringAiAgentAdapterTest {
         AssistantMessage.ToolCall springToolCall = new AssistantMessage.ToolCall(
                 "call-1", "function", "get_order", "{\"orderId\":42,\"includeHistory\":true}");
         ChatClientResponse response = responseWithToolCall(springToolCall);
-        SpringAiAgentAdapter.ToolCaptureAdvisor advisor = new SpringAiAgentAdapter.ToolCaptureAdvisor();
+        SpringAiToolCallCaptureAdvisor advisor = new SpringAiToolCallCaptureAdvisor();
         CallAdvisorChain chain = new FixedResponseChain(response);
 
         advisor.adviseCall(new ChatClientRequest(new Prompt("question"), Map.of()), chain);
 
-        assertThat(advisor.toolCalls()).hasSize(1);
-        assertThat(advisor.toolCalls().getFirst().name()).isEqualTo("get_order");
-        assertThat(advisor.toolCalls().getFirst().arguments())
+        assertThat(advisor.capturedToolCalls()).hasSize(1);
+        assertThat(advisor.capturedToolCalls().getFirst().name()).isEqualTo("get_order");
+        assertThat(advisor.capturedToolCalls().getFirst().arguments())
                 .containsEntry("orderId", 42)
                 .containsEntry("includeHistory", true);
     }
@@ -84,7 +84,7 @@ class SpringAiAgentAdapterTest {
     void rejectsToolArgumentsThatAreNotAJsonObject() {
         AssistantMessage.ToolCall springToolCall = new AssistantMessage.ToolCall(
                 "call-1", "function", "get_order", "[42]");
-        SpringAiAgentAdapter.ToolCaptureAdvisor advisor = new SpringAiAgentAdapter.ToolCaptureAdvisor();
+        SpringAiToolCallCaptureAdvisor advisor = new SpringAiToolCallCaptureAdvisor();
         CallAdvisorChain chain = new FixedResponseChain(responseWithToolCall(springToolCall));
 
         assertThatThrownBy(() -> advisor.adviseCall(
