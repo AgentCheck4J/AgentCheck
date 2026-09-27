@@ -1,5 +1,6 @@
 rootProject.name = 'agentcheck'
 
 include 'agentcheck-core'
+include 'agentcheck-examples'
 include 'agentcheck-mcp'
 include 'agentcheck-spring-ai'

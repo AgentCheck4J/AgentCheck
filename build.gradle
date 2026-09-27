@@ -36,31 +36,41 @@ subprojects {
 }
 
 tasks.named('clean') {
-    dependsOn ':agentcheck-core:clean', ':agentcheck-mcp:clean', ':agentcheck-spring-ai:clean'
+    dependsOn ':agentcheck-core:clean', ':agentcheck-examples:clean', ':agentcheck-mcp:clean',
+            ':agentcheck-spring-ai:clean'
 }
 
 tasks.named('check') {
-    dependsOn ':agentcheck-core:check', ':agentcheck-mcp:check', ':agentcheck-spring-ai:check'
+    dependsOn ':agentcheck-core:check', ':agentcheck-examples:check', ':agentcheck-mcp:check',
+            ':agentcheck-spring-ai:check'
 }
 
 tasks.named('build') {
-    dependsOn ':agentcheck-core:build', ':agentcheck-mcp:build', ':agentcheck-spring-ai:build'
+    dependsOn ':agentcheck-core:build', ':agentcheck-examples:build', ':agentcheck-mcp:build',
+            ':agentcheck-spring-ai:build'
 }
 
 tasks.register('test') {
     group = 'verification'
     description = 'Runs tests in all AgentCheck modules.'
-    dependsOn ':agentcheck-core:test', ':agentcheck-mcp:test', ':agentcheck-spring-ai:test'
+    dependsOn ':agentcheck-core:test', ':agentcheck-examples:test', ':agentcheck-mcp:test',
+            ':agentcheck-spring-ai:test'
 }
 
 tasks.register('run') {
     group = 'application'
     description = 'Runs the deterministic customer-support example.'
-    dependsOn ':agentcheck-core:run'
+    dependsOn ':agentcheck-examples:run'
 }
 
 tasks.register('recordExample') {
     group = 'application'
     description = 'Records a disabled customer-support golden-test draft.'
-    dependsOn ':agentcheck-core:recordExample'
+    dependsOn ':agentcheck-examples:recordExample'
+}
+
+tasks.register('mcpExample') {
+    group = 'application'
+    description = 'Runs the deterministic MCP mapping example.'
+    dependsOn ':agentcheck-examples:mcpExample'
 }

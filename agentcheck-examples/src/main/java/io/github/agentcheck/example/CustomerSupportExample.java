@@ -10,10 +10,10 @@ import java.nio.file.Path;
 public final class CustomerSupportExample {
     private CustomerSupportExample() { }
 
-    public static void main(String[] args) {
-        Path suitePath = args.length == 0
+    public static void main(String[] arguments) {
+        Path suitePath = arguments.length == 0
                 ? Path.of("examples/customer-support/golden.yaml")
-                : Path.of(args[0]);
+                : Path.of(arguments[0]);
         GoldenTestSuite suite = GoldenTestSuite.load(suitePath);
         EvaluationSuiteResult result = new AgentCheck().evaluate(new FakeSupportAgent(), suite);
         new ConsoleReporter().print(result, System.out);

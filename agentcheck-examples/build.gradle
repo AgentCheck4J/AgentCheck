@@ -1,0 +1,32 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation project(':agentcheck-core')
+    implementation project(':agentcheck-mcp')
+}
+
+application {
+    mainClass = 'io.github.agentcheck.example.CustomerSupportExample'
+}
+
+tasks.named('run', JavaExec) {
+    workingDir = rootProject.projectDir
+}
+
+tasks.register('recordExample', JavaExec) {
+    group = 'application'
+    description = 'Records a disabled customer-support golden-test draft.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.github.agentcheck.example.GoldenRecordingExample'
+    workingDir = rootProject.projectDir
+}
+
+tasks.register('mcpExample', JavaExec) {
+    group = 'application'
+    description = 'Runs the deterministic MCP mapping example.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.github.agentcheck.example.McpMappingExample'
+    workingDir = rootProject.projectDir
+}

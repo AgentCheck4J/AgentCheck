@@ -10,6 +10,12 @@ versioning once releases begin.
 - Optional `agentcheck-mcp` module based on the official MCP Java SDK 2.0.1
 - Deterministic mapping of ordered MCP tool requests and JSON arguments into
   AgentCheck execution traces
+- Non-published examples module with a runnable MCP mapping example
+
+### Changed
+
+- Removed customer-support demo classes and application concerns from
+  `agentcheck-core`
 
 ### Fixed
 

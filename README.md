@@ -278,6 +278,12 @@ documents. MCP itself does not define an agent's final answer, so AgentCheck
 does not infer one. Request order, tool names, and JSON arguments are preserved;
 tool results and network transport are deliberately outside this mapper.
 
+Run the complete deterministic mapping example with:
+
+```bash
+./gradlew mcpExample
+```
+
 ## Regression comparison
 
 v0.2 compares a baseline and current evaluation without inventing a composite
@@ -378,9 +384,10 @@ are no LangChain4j, database, or telemetry dependencies.
 
 ## Example
 
-[`examples/customer-support`](examples/customer-support) contains three tiny
-documents, a golden suite, and `FakeSupportAgent`. The fake is deterministic and
-is not presented as an AI agent. Run it with `./gradlew run`.
+The non-published `agentcheck-examples` module contains the deterministic fake
+agents and runnable examples. [`examples/customer-support`](examples/customer-support)
+contains consumer-owned policy documents and a golden suite. The fake is not
+presented as an AI agent. Run it with `./gradlew run`.
 
 ## What AgentCheck does NOT do
 
@@ -395,8 +402,9 @@ evaluation platforms.
   `io.github.agentcheck4j` namespace, then configure signed publication of
   `agentcheck-core`, `agentcheck-spring-ai`, and `agentcheck-mcp`
 - v0.5: MCP execution mapping
-- Future: LangChain4j, tool argument matching, nDCG, latency and token/cost
-  thresholds, optional LLM-based evaluators, and OpenTelemetry trace import
+- Future: custom deterministic policy rules, LangChain4j, tool argument
+  matching, nDCG, latency and token/cost thresholds, optional LLM-based
+  evaluators, and OpenTelemetry trace import
 
 No release dates are implied.
 
