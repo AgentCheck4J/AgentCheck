@@ -370,7 +370,25 @@ void supportAgentRegression() {
 
 The included GitHub Actions workflow runs `./gradlew test` on JDK 21. Evaluation
 results serialize through `result.toJson()` and can be loaded later as
-regression baselines.
+regression baselines. The test task also publishes all three library modules to
+an isolated local Maven repository and runs independent Core, Spring AI, and MCP
+consumer projects against the generated POM files.
+
+## Local Maven publication
+
+The publishable modules provide binary, source, and Javadoc JARs with
+Maven-Central-ready POM metadata. Run the complete local publication and
+consumer verification with:
+
+```bash
+./gradlew consumerSmokeTest
+```
+
+The generated repository lives under `build/consumer-test-repository` and does
+not modify `~/.m2`. Signing is enabled only when an ASCII-armored private key is
+provided through the `signingKey` Gradle property; `signingPassword` is optional
+for unencrypted keys. In CI these map to `ORG_GRADLE_PROJECT_signingKey` and
+`ORG_GRADLE_PROJECT_signingPassword`. Never commit either value.
 
 ## Architecture
 
@@ -399,8 +417,8 @@ evaluation platforms.
 ## Roadmap
 
 - TODO before publishing to Maven Central: register and verify the
-  `io.github.agentcheck4j` namespace, then configure signed publication of
-  `agentcheck-core`, `agentcheck-spring-ai`, and `agentcheck-mcp`
+  `io.github.agentcheck4j` namespace, then configure authenticated deployment
+  and the release workflow for the three signed library publications
 - v0.5: MCP execution mapping
 - Future: custom deterministic policy rules, LangChain4j, tool argument
   matching, nDCG, latency and token/cost thresholds, optional LLM-based

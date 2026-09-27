@@ -2,6 +2,10 @@ plugins {
     id 'java-library'
 }
 
+description = 'Spring AI integration for AgentCheck.'
+
+apply from: rootProject.file('gradle/library-publishing.gradle')
+
 dependencies {
     api project(':agentcheck-core')
     api platform('org.springframework.ai:spring-ai-bom:2.0.1')

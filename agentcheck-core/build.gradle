@@ -2,6 +2,10 @@ plugins {
     id 'java-library'
 }
 
+description = 'Deterministic regression testing for Java AI agents.'
+
+apply from: rootProject.file('gradle/library-publishing.gradle')
+
 dependencies {
     api 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2'

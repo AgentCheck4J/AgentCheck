@@ -1,0 +1,5 @@
+rootProject.name = 'agentcheck-consumer-smoke-tests'
+
+include 'core-consumer'
+include 'mcp-consumer'
+include 'spring-ai-consumer'

@@ -1,0 +1,58 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+java {
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = project.name
+                description = project.description
+                url = 'https://github.com/AgentCheck4J/AgentCheck'
+
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                        distribution = 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'ValerieRossDEV'
+                        name = 'ValerieRossDEV'
+                        url = 'https://github.com/ValerieRossDEV'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:https://github.com/AgentCheck4J/AgentCheck.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/AgentCheck4J/AgentCheck.git'
+                    url = 'https://github.com/AgentCheck4J/AgentCheck'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'consumerTest'
+            url = rootProject.layout.buildDirectory.dir('consumer-test-repository')
+        }
+    }
+}
+
+String signingKey = findProperty('signingKey')
+String signingPassword = findProperty('signingPassword')
+if (signingKey != null) {
+    signing {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications.mavenJava
+    }
+}

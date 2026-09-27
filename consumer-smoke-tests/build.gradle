@@ -1,0 +1,36 @@
+plugins {
+    id 'base'
+}
+
+String agentCheckRepository = providers.gradleProperty('agentCheckRepository').get()
+String agentCheckVersion = providers.gradleProperty('agentCheckVersion').get()
+
+subprojects {
+    apply plugin: 'application'
+
+    repositories {
+        maven {
+            url = uri(agentCheckRepository)
+            metadataSources {
+                mavenPom()
+                artifact()
+            }
+        }
+        mavenCentral()
+    }
+
+    configurations.configureEach {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+
+    dependencies {
+        String artifactId = "agentcheck-${project.name.replace('-consumer', '')}"
+        implementation "io.github.agentcheck4j:${artifactId}:${agentCheckVersion}"
+    }
+}
+
+tasks.register('runAll') {
+    group = 'verification'
+    description = 'Runs every independent AgentCheck consumer.'
+    dependsOn ':core-consumer:run', ':mcp-consumer:run', ':spring-ai-consumer:run'
+}

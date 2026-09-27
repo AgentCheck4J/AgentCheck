@@ -42,7 +42,7 @@ tasks.named('clean') {
 
 tasks.named('check') {
     dependsOn ':agentcheck-core:check', ':agentcheck-examples:check', ':agentcheck-mcp:check',
-            ':agentcheck-spring-ai:check'
+            ':agentcheck-spring-ai:check', 'consumerSmokeTest'
 }
 
 tasks.named('build') {
@@ -54,7 +54,27 @@ tasks.register('test') {
     group = 'verification'
     description = 'Runs tests in all AgentCheck modules.'
     dependsOn ':agentcheck-core:test', ':agentcheck-examples:test', ':agentcheck-mcp:test',
-            ':agentcheck-spring-ai:test'
+            ':agentcheck-spring-ai:test', 'consumerSmokeTest'
+}
+
+tasks.register('publishForConsumerTests') {
+    group = 'publishing'
+    description = 'Publishes AgentCheck libraries to the isolated consumer-test repository.'
+    dependsOn ':agentcheck-core:publishMavenJavaPublicationToConsumerTestRepository',
+            ':agentcheck-mcp:publishMavenJavaPublicationToConsumerTestRepository',
+            ':agentcheck-spring-ai:publishMavenJavaPublicationToConsumerTestRepository'
+}
+
+tasks.register('consumerSmokeTest', GradleBuild) {
+    group = 'verification'
+    description = 'Tests the published POMs from independent consumer projects.'
+    dependsOn 'publishForConsumerTests'
+    dir = file('consumer-smoke-tests')
+    tasks = ['clean', 'runAll']
+    startParameter.projectProperties = [
+            agentCheckRepository: layout.buildDirectory.dir('consumer-test-repository').get().asFile.absolutePath,
+            agentCheckVersion: project.version.toString()
+    ]
 }
 
 tasks.register('run') {

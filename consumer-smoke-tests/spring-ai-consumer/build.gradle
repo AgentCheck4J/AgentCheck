@@ -1,0 +1,3 @@
+application {
+    mainClass = 'io.github.agentcheck.consumer.SpringAiConsumer'
+}

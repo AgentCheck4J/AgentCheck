@@ -2,6 +2,10 @@ plugins {
     id 'java-library'
 }
 
+description = 'MCP execution mapping for AgentCheck.'
+
+apply from: rootProject.file('gradle/library-publishing.gradle')
+
 dependencies {
     api project(':agentcheck-core')
     api 'io.modelcontextprotocol.sdk:mcp-core:2.0.1'

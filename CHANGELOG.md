@@ -11,6 +11,10 @@ versioning once releases begin.
 - Deterministic mapping of ordered MCP tool requests and JSON arguments into
   AgentCheck execution traces
 - Non-published examples module with a runnable MCP mapping example
+- Maven publications with source JARs, Javadoc JARs, Central-required POM
+  metadata, and optional in-memory PGP signing
+- Independent consumer smoke tests for Core, Spring AI, and MCP publication
+  metadata
 
 ### Changed
 
