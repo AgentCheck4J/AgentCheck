@@ -362,7 +362,8 @@ evaluation platforms.
 
 ## Roadmap
 
-- TODO before publishing to Maven Central: configure signed publication of
+- TODO before publishing to Maven Central: register and verify the
+  `io.github.agentcheck4j` namespace, then configure signed publication of
   `agentcheck-core` and `agentcheck-spring-ai`
 - v0.5: MCP execution mapping
 - Future: LangChain4j, tool argument matching, nDCG, latency and token/cost
