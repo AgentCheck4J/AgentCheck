@@ -202,15 +202,20 @@ errors identify the failing input and do not write a partial draft.
 
 ## Spring AI integration
 
-v0.3 includes a blocking adapter for Spring AI 2.0.1. AgentCheck keeps Spring
-AI optional, so applications using the adapter must add Spring AI themselves:
+The Spring AI adapter lives in the separate `agentcheck-spring-ai` module.
+Applications using the adapter depend on that module; its API dependency brings
+in both `agentcheck-core` and the compatible Spring AI client:
 
 ```groovy
 dependencies {
-    implementation platform('org.springframework.ai:spring-ai-bom:2.0.1')
-    implementation 'org.springframework.ai:spring-ai-client-chat'
+    implementation project(':agentcheck-spring-ai')
 }
 ```
+
+Applications that do not use Spring AI depend only on `agentcheck-core` and do
+not receive Spring AI classes or transitive dependencies. Published Maven
+coordinates will replace the project dependency after the first Maven Central
+release.
 
 Pass an already configured `ChatClient`; AgentCheck does not choose a model,
 provider, credentials, tools, or advisors:
@@ -334,12 +339,13 @@ regression baselines.
 
 ## Architecture
 
-The small public API consists of the `AgentCheck` facade and `AgentAdapter`,
+The `agentcheck-core` module contains the `AgentCheck` facade and `AgentAdapter`,
 immutable execution/golden records, immutable result records, the console
-reporter, one assertion helper, and an optional Spring AI adapter. Parsing and
-metric calculations remain behind the facade. Core evaluation has no Spring AI
-runtime dependency, and there are no LangChain4j, MCP, database, or telemetry
-dependencies.
+reporter, and one assertion helper. Parsing and metric calculations remain
+behind the facade. The `agentcheck-spring-ai` module contains the optional
+Spring AI adapter and declares Spring AI as an explicit API dependency. Core
+evaluation has no framework runtime dependency, and there are no LangChain4j,
+MCP, database, or telemetry dependencies.
 
 ## Example
 
@@ -356,10 +362,8 @@ evaluation platforms.
 
 ## Roadmap
 
-- TODO before publishing to Maven Central: split the project into
-  `agentcheck-core` and `agentcheck-spring-ai`, replacing the current
-  `compileOnly` integration with an explicit Spring AI dependency in the
-  adapter module
+- TODO before publishing to Maven Central: configure signed publication of
+  `agentcheck-core` and `agentcheck-spring-ai`
 - v0.5: MCP execution mapping
 - Future: LangChain4j, tool argument matching, nDCG, latency and token/cost
   thresholds, optional LLM-based evaluators, and OpenTelemetry trace import

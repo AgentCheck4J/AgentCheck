@@ -1,54 +1,66 @@
 plugins {
-    id 'java-library'
-    id 'application'
+    id 'base'
 }
 
 group = 'io.github.agentcheck'
 version = '0.4.0-SNAPSHOT'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-    withSourcesJar()
-}
+allprojects {
+    group = rootProject.group
+    version = rootProject.version
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2'
-
-    compileOnly platform('org.springframework.ai:spring-ai-bom:2.0.1')
-    compileOnly 'org.springframework.ai:spring-ai-client-chat'
-
-    testImplementation platform('org.junit:junit-bom:5.11.4')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
-    testImplementation platform('org.springframework.ai:spring-ai-bom:2.0.1')
-    testImplementation 'org.springframework.ai:spring-ai-client-chat'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-application {
-    mainClass = 'io.github.agentcheck.example.CustomerSupportExample'
-}
-
-tasks.withType(JavaExec).configureEach {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(21)
+    repositories {
+        mavenCentral()
     }
 }
 
-tasks.register('recordExample', JavaExec) {
+subprojects {
+    plugins.withType(JavaPlugin).configureEach {
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(21)
+            }
+            withSourcesJar()
+        }
+
+        tasks.withType(Test).configureEach {
+            useJUnitPlatform()
+        }
+
+        tasks.withType(JavaExec).configureEach {
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(21)
+            }
+        }
+    }
+}
+
+tasks.named('clean') {
+    dependsOn ':agentcheck-core:clean', ':agentcheck-spring-ai:clean'
+}
+
+tasks.named('check') {
+    dependsOn ':agentcheck-core:check', ':agentcheck-spring-ai:check'
+}
+
+tasks.named('build') {
+    dependsOn ':agentcheck-core:build', ':agentcheck-spring-ai:build'
+}
+
+tasks.register('test') {
+    group = 'verification'
+    description = 'Runs tests in all AgentCheck modules.'
+    dependsOn ':agentcheck-core:test', ':agentcheck-spring-ai:test'
+}
+
+tasks.register('run') {
+    group = 'application'
+    description = 'Runs the deterministic customer-support example.'
+    dependsOn ':agentcheck-core:run'
+}
+
+tasks.register('recordExample') {
     group = 'application'
     description = 'Records a disabled customer-support golden-test draft.'
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'io.github.agentcheck.example.GoldenRecordingExample'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
+    dependsOn ':agentcheck-core:recordExample'
 }

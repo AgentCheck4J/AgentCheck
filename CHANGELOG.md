@@ -22,6 +22,10 @@ versioning once releases begin.
 
 ### Changed
 
+- Split the framework-free core and optional Spring AI integration into the
+  `agentcheck-core` and `agentcheck-spring-ai` modules
+- Replaced the Spring AI `compileOnly` dependency with an explicit API
+  dependency in the integration module
 - Split evaluation, suite aggregation, regression comparison, golden-suite
   parsing, Spring AI mapping, and console rendering into focused components
 - Standardized explicit types, intention-revealing names, validation methods,
