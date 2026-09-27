@@ -131,6 +131,50 @@ EvaluationSuiteResult result = new AgentCheck().evaluate(
 One case can be evaluated directly with
 `new AgentCheck().evaluate(goldenCase, recordedExecution)`.
 
+## Spring AI integration
+
+v0.3 includes a blocking adapter for Spring AI 2.0.1. AgentCheck keeps Spring
+AI optional, so applications using the adapter must add Spring AI themselves:
+
+```groovy
+dependencies {
+    implementation platform('org.springframework.ai:spring-ai-bom:2.0.1')
+    implementation 'org.springframework.ai:spring-ai-client-chat'
+}
+```
+
+Pass an already configured `ChatClient`; AgentCheck does not choose a model,
+provider, credentials, tools, or advisors:
+
+```java
+ChatClient chatClient = ChatClient.builder(chatModel)
+        .defaultAdvisors(questionAnswerAdvisor)
+        .defaultTools(orderTools)
+        .build();
+
+AgentAdapter agent = new SpringAiAgentAdapter(chatClient);
+EvaluationSuiteResult result = new AgentCheck().evaluate(agent, suite);
+```
+
+The adapter maps the final answer, tool calls from Spring AI's tool-calling
+loop, and documents exposed by `QuestionAnswerAdvisor` under
+`qa_retrieved_documents` into an `AgentExecution`. Returned document order
+becomes rank 1, 2, and so on; Spring AI similarity scores are preserved.
+
+Spring AI document IDs are generated unless the application assigns them. To
+compare a stable source name from document metadata instead, provide an
+extractor:
+
+```java
+SpringAiAgentAdapter adapter = new SpringAiAgentAdapter(
+        chatClient,
+        document -> (String) document.getMetadata().get("source"));
+```
+
+Tool arguments are retained as JSON objects even though deterministic argument
+matching is not yet part of AgentCheck's evaluator. Streaming is deliberately
+outside the v0.3 adapter.
+
 ## Regression comparison
 
 v0.2 compares a baseline and current evaluation without inventing a composite
@@ -223,9 +267,10 @@ regression baselines.
 
 The small public API consists of the `AgentCheck` facade and `AgentAdapter`,
 immutable execution/golden records, immutable result records, the console
-reporter, and one assertion helper. Parsing and metric calculations remain
-behind the facade. There are no Spring AI, LangChain4j, MCP, database, agent
-framework, or telemetry dependencies.
+reporter, one assertion helper, and an optional Spring AI adapter. Parsing and
+metric calculations remain behind the facade. Core evaluation has no Spring AI
+runtime dependency, and there are no LangChain4j, MCP, database, or telemetry
+dependencies.
 
 ## Example
 
@@ -235,14 +280,17 @@ is not presented as an AI agent. Run it with `./gradlew run`.
 
 ## What AgentCheck does NOT do
 
-AgentCheck v0.1 does not orchestrate agents, implement RAG, score semantic answer
+AgentCheck does not orchestrate agents, implement RAG, score semantic answer
 quality, manage prompts, trace distributed systems, provide a UI, or call an
 LLM as a judge. It is not a generic policy engine and does not replace broader
 evaluation platforms.
 
 ## Roadmap
 
-- v0.3: Spring AI adapter
+- TODO before publishing to Maven Central: split the project into
+  `agentcheck-core` and `agentcheck-spring-ai`, replacing the current
+  `compileOnly` integration with an explicit Spring AI dependency in the
+  adapter module
 - v0.4: MCP execution mapping
 - Future: LangChain4j, tool argument matching, nDCG, latency and token/cost
   thresholds, optional LLM-based evaluators, and OpenTelemetry trace import

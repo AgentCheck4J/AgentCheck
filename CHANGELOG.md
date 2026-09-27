@@ -5,6 +5,13 @@ versioning once releases begin.
 
 ## [Unreleased]
 
+### Added
+
+- Optional Spring AI 2.0.1 adapter for blocking `ChatClient` executions
+- Mapping of final answers, QuestionAnswerAdvisor documents, similarity scores,
+  and tool calls into AgentCheck execution traces
+- Custom Spring AI document ID extraction for stable golden-test identifiers
+
 ## [0.2.0] - 2026-09-26
 
 ### Added
