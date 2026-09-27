@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'io.github.agentcheck4j'
-version = '0.4.0-SNAPSHOT'
+version = '0.4.0'
 
 allprojects {
     group = rootProject.group

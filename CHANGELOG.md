@@ -5,6 +5,8 @@ versioning once releases begin.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-27
+
 ### Added
 
 - Safe golden-test recording from live agents or existing execution traces
