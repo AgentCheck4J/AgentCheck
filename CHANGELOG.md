@@ -7,6 +7,14 @@ versioning once releases begin.
 
 ### Added
 
+- Safe golden-test recording from live agents or existing execution traces
+- Disabled YAML drafts with proposed document and tool expectations for manual
+  review and approval
+- Opt-in recording of observed answers and tool arguments
+- Non-overwriting draft file output
+- Versioned JSON persistence for reusable execution recordings
+- Runnable `recordExample` task and versioned deterministic YAML output
+- Case-specific recording failures without partial draft output
 - Optional Spring AI 2.0.1 adapter for blocking `ChatClient` executions
 - Mapping of final answers, QuestionAnswerAdvisor documents, similarity scores,
   and tool calls into AgentCheck execution traces

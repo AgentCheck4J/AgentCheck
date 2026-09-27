@@ -131,6 +131,75 @@ EvaluationSuiteResult result = new AgentCheck().evaluate(
 One case can be evaluated directly with
 `new AgentCheck().evaluate(goldenCase, recordedExecution)`.
 
+## Record golden-test drafts
+
+v0.4 can bootstrap a golden suite from live agent executions. Generated cases
+are always disabled drafts: AgentCheck records what happened, but never assumes
+that the observed behaviour is correct.
+
+Run the included example without writing any Java code:
+
+```bash
+./gradlew clean recordExample
+```
+
+The generated draft is written to
+`build/agentcheck/customer-support-draft.yaml`. `clean` removes the previous
+build output; the recorder itself still refuses to overwrite an existing file.
+
+```java
+GoldenTestRecorder recorder = new GoldenTestRecorder();
+List<TestInput> inputs = List.of(
+        new TestInput("shipping-status", "Where is my order?"),
+        new TestInput("refund", "Refund my last order"));
+
+GoldenTestSuiteDraft draft = recorder.record(agent, "customer-support", inputs);
+draft.writeNew(Path.of("customer-support-draft.yaml"));
+```
+
+Every retrieved document becomes a proposed relevant document and every called
+tool becomes a proposed required tool. Duplicate document and tool names are
+removed while their observed order is preserved. Forbidden tools and answer
+expectations are never inferred. Review and edit those decisions before
+changing a generated case from `enabled: false` to `enabled: true`.
+
+Capture executions as versioned JSON when recording and review happen at
+different times or in different environments:
+
+```java
+RecordedTestSuite recording = recorder.capture(agent, "customer-support", inputs);
+recording.writeNew(Path.of("customer-support-recording.json"));
+
+RecordedTestSuite savedRecording = RecordedTestSuite.loadJson(
+        Path.of("customer-support-recording.json"));
+GoldenTestSuiteDraft draft = recorder.fromExecutions(savedRecording);
+```
+
+Safe defaults omit observed answer text and tool arguments, which may contain
+sensitive data. They can be included explicitly when appropriate:
+
+```java
+RecordingOptions options = new RecordingOptions(5, true, true);
+GoldenTestRecorder recorder = new GoldenTestRecorder(options);
+```
+
+`writeNew` uses create-only file semantics and fails if the target already
+exists. It never overwrites a committed golden suite.
+
+The complete review workflow is:
+
+1. Run `./gradlew clean recordExample` or call `GoldenTestRecorder` from the
+   application.
+2. Open the generated YAML and inspect every proposed document and tool.
+3. Remove accidental observations and add forbidden tools or other missing
+   expectations manually.
+4. Change only reviewed cases from `enabled: false` to `enabled: true`.
+5. Move the reviewed suite into the project's test data and commit it.
+6. Load it with `GoldenTestSuite.load(...)` in the normal AgentCheck test.
+
+Both recording JSON and generated YAML carry `schemaVersion: 1`. Recording
+errors identify the failing input and do not write a partial draft.
+
 ## Spring AI integration
 
 v0.3 includes a blocking adapter for Spring AI 2.0.1. AgentCheck keeps Spring
@@ -291,7 +360,7 @@ evaluation platforms.
   `agentcheck-core` and `agentcheck-spring-ai`, replacing the current
   `compileOnly` integration with an explicit Spring AI dependency in the
   adapter module
-- v0.4: MCP execution mapping
+- v0.5: MCP execution mapping
 - Future: LangChain4j, tool argument matching, nDCG, latency and token/cost
   thresholds, optional LLM-based evaluators, and OpenTelemetry trace import
 

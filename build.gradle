@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'io.github.agentcheck'
-version = '0.3.0-SNAPSHOT'
+version = '0.4.0-SNAPSHOT'
 
 java {
     toolchain {
@@ -34,6 +34,13 @@ dependencies {
 
 application {
     mainClass = 'io.github.agentcheck.example.CustomerSupportExample'
+}
+
+tasks.register('recordExample', JavaExec) {
+    group = 'application'
+    description = 'Records a disabled customer-support golden-test draft.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.github.agentcheck.example.GoldenRecordingExample'
 }
 
 tasks.named('test') {
