@@ -27,6 +27,11 @@ versioning once releases begin.
 - Standardized explicit types, intention-revealing names, validation methods,
   and immutable intermediate results throughout the codebase
 
+### Fixed
+
+- Run application and recording example tasks with the configured JDK 21
+  toolchain even when Gradle itself was started with an older Java runtime
+
 ## [0.2.0] - 2026-09-26
 
 ### Added

@@ -36,6 +36,12 @@ application {
     mainClass = 'io.github.agentcheck.example.CustomerSupportExample'
 }
 
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 tasks.register('recordExample', JavaExec) {
     group = 'application'
     description = 'Records a disabled customer-support golden-test draft.'
