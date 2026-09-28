@@ -5,6 +5,8 @@ versioning once releases begin.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-28
+
 ### Added
 
 - Optional `agentcheck-mcp` module based on the official MCP Java SDK 2.0.1
