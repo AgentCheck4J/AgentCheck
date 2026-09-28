@@ -444,7 +444,6 @@ evaluation platforms.
 - TODO before publishing to Maven Central: register and verify the
   `io.github.agentcheck4j` namespace, then configure authenticated deployment
   and the release workflow for the three signed library publications
-- v0.5: MCP execution mapping
 - Future: custom deterministic policy rules, LangChain4j, tool argument
   matching, nDCG, latency and token/cost thresholds, optional LLM-based
   evaluators, and OpenTelemetry trace import
