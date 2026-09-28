@@ -427,6 +427,11 @@ agents and runnable examples. [`examples/customer-support`](examples/customer-su
 contains consumer-owned policy documents and a golden suite. The fake is not
 presented as an AI agent. Run it with `./gradlew run`.
 
+For a real local model call, see the standalone
+[AgentCheck Ollama example](https://github.com/AgentCheck4J/agentcheck-ollama-example).
+It runs `gemma4:12b` through Spring AI, executes a Java order tool, and evaluates
+the observed tool request with AgentCheck without requiring a cloud API key.
+
 ## What AgentCheck does NOT do
 
 AgentCheck does not orchestrate agents, implement RAG, score semantic answer

@@ -16,6 +16,7 @@ versioning once releases begin.
 - Independent consumer smoke tests for Core, Spring AI, and MCP publication
   metadata
 - Public API Javadocs and module-selection quick starts
+- Standalone live Ollama consumer example using Spring AI and a Java tool
 
 ### Changed
 
