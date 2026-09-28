@@ -27,6 +27,12 @@ versioning once releases begin.
 
 - Preserve valid JSON `null` values in captured tool arguments
 
+### Security
+
+- Pin GitHub Actions to immutable commit SHAs and verify the Gradle distribution
+  with its published SHA-256 checksum
+- Document supported versions and private vulnerability reporting guidance
+
 ## [0.4.0] - 2026-09-27
 
 ### Added
